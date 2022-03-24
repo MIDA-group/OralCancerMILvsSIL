@@ -24,16 +24,16 @@ Python version 3.8.8. Main dependencies: reqs.txt
 - directory `MIL`: codes for training and evaluating ABMIL with within bag sampling on PAP-QMNIST-bags and OC datasets.
 - directory `SIL`: codes for training and evaluating conventional deep SIL on PAP-QMNIST-bags and OC datasets.
 
-Restart the kernel if changes to the internal codes are made.
+Restart jupyter kernel if changes to the internal codes are made.
 
 <ins>Note:</ins> the code is created for PAP-QMNIST data based on OC data and might require changes if custom data is used.
 
 ## Citation
-@article{koriakina2022oral,
-  title={Oral cancer detection and interpretation: Deep multiple instance learning versus conventional deep single instance learning},
-  author={Koriakina, Nadezhda and Sladoje, Nata{\v{s}}a and Ba{\v{s}}i{\'c}, Vladimir and Lindblad, Joakim},
-  journal={arXiv preprint arXiv:2202.01783},
-  year={2022}
+@article{koriakina2022oral,<br />
+  title={Oral cancer detection and interpretation: Deep multiple instance learning versus conventional deep single instance learning},<br />
+  author={Koriakina, Nadezhda and Sladoje, Nata{\v{s}}a and Ba{\v{s}}i{\'c}, Vladimir and Lindblad, Joakim},<br />
+  journal={arXiv preprint arXiv:2202.01783},<br />
+  year={2022}<br />
 }
 
 ## References
