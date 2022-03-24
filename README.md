@@ -20,8 +20,9 @@ Based on [original implementation](https://github.com/AMLab-Amsterdam/AttentionD
 Python version 3.8.8. Main dependencies: reqs.txt
 
 ## How to use
-- `Create_PAP_QMNISTbags_datasets.ipynb`: code for creating PAP-QMNIST-bags datasets. QMNIST [[3]](#3) images are colorised according to the distribution of color channels corresponding to oral cancer sample, augmented, resized to the size of oral cancer images. The bags are created with the same number of instances as in oral cancer dataset.
-- `MAIN_ABMIL_with_within_bag_sampling_QMNIST.ipynb` and `MAIN_ABMIL_with_within_bag_sampling_IMAGENETTE.ipynb`: code for training and evaluating ABMIL with/without within bag sampling for QMNIST-bags and Imagenette-bags datasets correspondingly.
+- `Create_PAP_QMNISTbags_datasets.ipynb`: code for creating PAP-QMNIST-bags datasets. QMNIST [[3]](#3) images are colorised according to the distribution of color channels corresponding to OC sample, augmented, resized to the size of images from OC dataset. The bags are created with the same number of instances as in OC dataset.
+- directory `MIL`: codes for training and evaluating ABMIL with within bag sampling on PAP-QMNIST-bags and OC datasets.
+- directory `SIL`: codes for training and evaluating conventional deep SIL on PAP-QMNIST-bags and OC datasets.
 
 Restart the kernel if changes to the internal codes are made.
 
