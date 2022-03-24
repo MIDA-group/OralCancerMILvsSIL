@@ -12,7 +12,7 @@
 ## Overview
 - Code for creating PAP-QMNIST-bags datasets
 - Code for training and evaluating Attention-based deep multiple instance learning (ABMIL)[[1]](#1) with within bag sampling [[2]](#2) for PAP-QMNIST-bags and oral cancer (OC) datasets
-- Code for training and evaluating single instance learning (SIL) for PAP-QMNIST-bags and oral cancer (OC) datasets
+- Code for training and evaluating single instance learning (SIL) for PAP-QMNIST-bags and OC datasets
 
 Based on [original implementation](https://github.com/AMLab-Amsterdam/AttentionDeepMIL) of ABMIL and [modified implementation](https://github.com/MIDA-group/SampledABMIL) with within bag sampling
 
