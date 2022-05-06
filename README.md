@@ -40,7 +40,7 @@ Restart jupyter kernel if changes to the internal codes are made.
 <a id="1">[1]</a> 
 M.  Ilse,  J.  Tomczak,  and  M.  Welling,  “Attention-based  deep  multiple instance learning,”  in International conference on machine learning.PMLR, 2018, pp. 2127–2136.<br />
 <a id="2">[2]</a> 
-N. Koriakina, N. Sladoje and J. Lindblad, "The Effect of Within-Bag Sampling on End-to-End Multiple Instance Learning," 2021 12th International Symposium on Image and Signal Processing and Analysis (ISPA), 2021, pp. 183-188, doi: 10.1109/ISPA52656.2021.9552170.
+N. Koriakina, N. Sladoje and J. Lindblad, "The Effect of Within-Bag Sampling on End-to-End Multiple Instance Learning," 2021 12th International Symposium on Image and Signal Processing and Analysis (ISPA), 2021, pp. 183-188, doi: 10.1109/ISPA52656.2021.9552170.<br />
 <a id="1">[3]</a> 
 Yadav, Chhavi, and Léon Bottou. "Cold case: The lost mnist digits." arXiv preprint arXiv:1905.10498 (2019).<br />
 
