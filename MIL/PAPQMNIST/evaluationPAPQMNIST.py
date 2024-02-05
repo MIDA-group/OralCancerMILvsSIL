@@ -16,7 +16,8 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
     start_t = perf_counter() 
     count_TP=0;count_TN=0;count_FP=0;count_FN=0; 
     all_true_labels=[]; all_pred_labels=[]
-    AUC_all_bags=[]; AUC_positive_bags=[]; 
+    AUC_all_bags=[]; AUC_positive_bags=[]; metric_TPvsNtopkey_all_pos_bags=[]
+
     true_all_bags_label=[]
     sens_all_bags=[]; spec_all_bags=[]
     num_test_bags = len(bag_names)
@@ -25,23 +26,24 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
     for bag_num in bag_names: 
         bag_folder = os.path.join(weights_folder, subfolder_valid_approach, bag_num.zfill(4)) ###
         list_weights_bag = list_files_in_folder(bag_folder)
-        top_number = 36 #50
+        top_number = 25 #36 #50
         if not os.path.exists(os.path.join(root, 'test', 'negative', bag_num.zfill(2))): ###
             bag_folder_test = os.path.join(root, 'test', 'positive', bag_num.zfill(2)) ###
             true_bag_label = 1
         else:
             bag_folder_test = os.path.join(root,'test', 'negative', bag_num.zfill(2)) ###
             true_bag_label = 0
-
+        print(bag_folder_test)
+        # ''' 
         # Bag level label
         all_pred_sample_labels=[]
         for s in range(num_samples):
-            for i in range(len(list_weights_bag)):
-                if list_weights_bag[i][-21:-18]==str(s).zfill(2) or list_weights_bag[i][-20:-18]==str(s).zfill(2): ###
+            for i in range(len(list_weights_bag)): 
+                if list_weights_bag[i][-23:-18]==str(s).zfill(5):
                     pred_sample_label = list_weights_bag[i][-8:-7] ###
-                    all_pred_sample_labels.append(pred_sample_label)                    
+                    all_pred_sample_labels.append(pred_sample_label)
                     break # all instances in sample have the same bag label
-                    
+        
         majority_bag_label_from_all_samples_for_one_bag = np.mean(np.asarray(all_pred_sample_labels).astype(int))
         pred_bag_label = 0
         if majority_bag_label_from_all_samples_for_one_bag>=0.5: #majority label bag level ### 
@@ -56,18 +58,23 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
             count_FP+=1
         elif true_bag_label==0 and pred_bag_label==0:
             count_TN+=1     
-            
+        print(true_bag_label, pred_bag_label)
         all_true_labels.append(true_bag_label); all_pred_labels.append(pred_bag_label)
 
         # Instance level label
         weights_all_samples_for_one_bag=[]; names_all_samples_for_one_bag=[]
         for s in range(num_samples):
+            
             all_inst_weights_in_one_sample=[]; all_inst_names_in_one_sample=[]
-            for i in range(len(list_weights_bag)):           
-                if list_weights_bag[i][-21:-18]==str(s).zfill(2) or list_weights_bag[i][-20:-18]==str(s).zfill(2): ###
+            # print('len(list_weights_bag)', len(list_weights_bag))
+            for i in range(len(list_weights_bag)):          
+                print('list_weights_bag[i][-24:-18]', list_weights_bag[i][-24:-18])
+                if list_weights_bag[i][-23:-18]==str(s).zfill(5):
                     coeff = np.load(os.path.join(bag_folder, list_weights_bag[i]))
                     all_inst_weights_in_one_sample.append(coeff)
-                    all_inst_names_in_one_sample.append(list_weights_bag[i])
+                    all_inst_names_in_one_sample.append(list_weights_bag[i])        
+        
+            # print('len(all_inst_weights_in_one_sample)', len(all_inst_weights_in_one_sample))
             min_coef = np.min(np.asarray(all_inst_weights_in_one_sample))
             max_coef = np.max(np.asarray(all_inst_weights_in_one_sample))
             # Normalise weights
@@ -78,7 +85,7 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
         all_test_img_names_in_bag = list_files_in_folder(bag_folder_test)
         average_weights_all_instances_one_bag=[]; majority_label_all_instances_one_bag=[]
         all_images_true_instance_label=[]
-        names_test_imgs_sampled_one_bag = []
+        names_test_imgs_sampled_one_bag = []; true_instance_label=None
         for j in range(len(all_test_img_names_in_bag)):
             one_image_pred_sample_label=[];  one_image_weights=[]
             img_name = all_test_img_names_in_bag[j]  
@@ -92,13 +99,13 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
                         true_instance_label = temp_names[t][-17:-16] ###
                         one_image_pred_sample_label.append(pred_sample_label)
                         
-            if not one_image_pred_sample_label: # due to sampling, not all images might be sampled at least one time
-                print('NO EVALUATION FOR IMAGE: ', j)
-                names_test_imgs_sampled_one_bag.append('') 
-            else:
-                names_test_imgs_sampled_one_bag.append(img_name)
-            
-            all_images_true_instance_label.append(true_instance_label)
+#             if not one_image_pred_sample_label: # due to sampling, not all images might be sampled at least one time
+#                 print('NO EVALUATION FOR IMAGE: ', j)
+#                 names_test_imgs_sampled_one_bag.append('') 
+#             else:
+#                 names_test_imgs_sampled_one_bag.append(img_name)
+            if true_instance_label is not None:
+                all_images_true_instance_label.append(true_instance_label)
             arr_one_image_pred_sample_label = np.asarray(one_image_pred_sample_label).astype(int)
             count1 = np.count_nonzero(arr_one_image_pred_sample_label == 1)
             if count1>np.around(len(arr_one_image_pred_sample_label)/2):
@@ -143,56 +150,58 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
                 top_number = len(all_average_weights_one_bag)
             
             top_weights_img_names = np.asarray(all_names_average_weights_one_bag)[inds[-top_number:]]
-            create_save_dir(os.path.join(avg_weights_bag_folder, 'maj_label_1'), 'top')
-            np.save(os.path.join(avg_weights_bag_folder, 'maj_label_1', 'top', 'top'+str(top_number)+'.npy'), top_weights_img_names)
+            create_save_dir(os.path.join(avg_weights_bag_folder, 'maj_label_1'), 'top'+str(top_number))
+            np.save(os.path.join(avg_weights_bag_folder, 'maj_label_1', 'top'+str(top_number), 'top'+str(top_number)+'.npy'), top_weights_img_names)
         elif pred_bag_label==0:  
             inds = np.argsort(np.asarray(all_average_weights_one_bag))
             if len(all_average_weights_one_bag) < top_number:
                 top_number = len(all_average_weights_one_bag)
 
             top_weights_img_names = np.asarray(all_names_average_weights_one_bag)[inds[-top_number:]]
-            create_save_dir(os.path.join(avg_weights_bag_folder, 'maj_label_0'), 'top')
-            np.save(os.path.join(avg_weights_bag_folder, 'maj_label_0', 'top', 'top'+str(top_number)+'.npy'), top_weights_img_names)                
+            create_save_dir(os.path.join(avg_weights_bag_folder, 'maj_label_0'), 'top'+str(top_number))
+            np.save(os.path.join(avg_weights_bag_folder, 'maj_label_0', 'top'+str(top_number), 'top'+str(top_number)+'.npy'), top_weights_img_names)                
             
             
         if true_bag_label==1:
-        # Instance level metrics
-            all_TPR=[]; all_FPR=[]
-            best_F1ins=0; best_prec_ins=0; best_recall_ins=0; best_specificity_ins=0; max_TPR_FPR = 0
-            threshold_range = np.arange(0,1+0.001,0.001)
-            for th in range(len(threshold_range)):
-                count_TP_ins=0;count_TN_ins=0;count_FP_ins=0;count_FN_ins=0
-                Threshold = threshold_range[th]
-                for k in range(len(arr)):                
-                    if arr[k]>=Threshold and maj_arr[k]==1 and all_images_true_instance_label[k]==str(1):
-                        count_TP_ins+=1
-                    elif arr[k]>=Threshold and maj_arr[k]==1 and all_images_true_instance_label[k]==str(0):
-                        count_FP_ins+=1          
-                    elif (arr[k]>=Threshold and maj_arr[k]==0 and all_images_true_instance_label[k]==str(0)) or \
-                    (arr[k]<Threshold and all_images_true_instance_label[k]==str(0)):
-                        count_TN_ins+=1      
-                    elif (arr[k]>=Threshold and maj_arr[k]==0 and all_images_true_instance_label[k]==str(1)) or \
-                    (arr[k]<Threshold and all_images_true_instance_label[k]==str(1)):
-                        count_FN_ins+=1              
+            # Instance level metrics
+            '''Add TP/(N key instances in bag)'''
+            # print(imgs_names_in_bag)
+            # print(np.char.startswith(imgs_names_in_bag, '4'))
+            num_key_inst_in_bag = np.count_nonzero(np.char.startswith(names_test_imgs_sampled_one_bag, '4'))
+            print('Number of key instances, number ofinstances in a bag:', num_key_inst_in_bag, len(names_test_imgs_sampled_one_bag))
+            
+            idxs = np.flip(np.argsort(arr)) 
+            top_imgs_names_in_bag=[];top_scores_in_bag=[]
+            for i in range(num_key_inst_in_bag):
+                if i==num_key_inst_in_bag-1:
+#                     print(arr[idxs[i]])
+                top_scores_in_bag.append(arr[idxs[i]]) 
+                top_imgs_names_in_bag.append(np.asarray(all_names_average_weights_one_bag)[idxs[i]])
+            count_TP_ins_in_top = 0
+            for k in range(len(top_scores_in_bag)): 
+                # if maj_arr[k]==1 and top_imgs_names_in_bag[k][0]==str('4'):
+                if pred_bag_label==1 and top_imgs_names_in_bag[k][0]==str('4'):
+                    count_TP_ins_in_top+=1
 
-                #TPR, FPR for a certain threshold
-                TPR = count_TP_ins/(count_TP_ins+count_FN_ins+1e-12)
-                FPR = count_FP_ins/(count_FP_ins+count_TN_ins+1e-12)
-                all_TPR.append(TPR); all_FPR.append(FPR)
+            TP_ins_in_top_N = count_TP_ins_in_top
+            print('TP_ins_in_top_N', TP_ins_in_top_N)
+            metric_TPvsNtopkey = TP_ins_in_top_N/(num_key_inst_in_bag+1e-12)
+
         if true_bag_label==1:        
-            AUC_bag = sklearn.metrics.auc(np.asarray(all_FPR), np.asarray(all_TPR))
-            AUC_all_bags.append(np.around(AUC_bag, decimals=5))
-            AUC_positive_bags.append(np.around(AUC_bag, decimals=5))
+            print('metric_TPvsNtopkey: ',metric_TPvsNtopkey)          
+            metric_TPvsNtopkey_all_pos_bags.append(np.around(metric_TPvsNtopkey, decimals=5)) 
 
-
-    fpr, tpr, thres = sklearn.metrics.roc_curve(np.asarray(all_true_labels), np.asarray(all_pred_labels))
-    AUC_bag_level = sklearn.metrics.auc(fpr, tpr)
-
+#     fpr, tpr, thres = sklearn.metrics.roc_curve(np.asarray(all_true_labels), np.asarray(all_pred_labels))
+#     AUC_bag_level = sklearn.metrics.auc(fpr, tpr)
+    print('Bag true. pred: ', all_true_labels, all_pred_labels)
+    acc_bag = np.sum(np.where(np.asarray(all_true_labels)==np.asarray(all_pred_labels), 1, 0))/(num_test_bags+1e-12)
     e = perf_counter() - start_t
     print("Elapsed time during the whole program in seconds:", e)
 
-    print('AUC', "%.3f" % AUC_bag_level)
+    print('Accuracy, bag level', "%.3f" % acc_bag)
     print('Bag level confusion matrix', [count_TP,count_FP,count_FN,count_TN])
 
-    print('AUC for positive bags, instance level:', 
-          np.around(np.sum(np.asarray(AUC_positive_bags))/(num_test_bags/2), decimals=3))
+    print('Precision@Ki for positive bags, instance level:', np.around(np.sum(np.asarray(metric_TPvsNtopkey_all_pos_bags))/(num_test_bags/2), decimals=3))
+
+
+

@@ -8,14 +8,16 @@ from torch.autograd import Variable
 import os
 import shutil
 from pathlib import Path
-from functions_PAPQMNIST import list_files_in_folder, create_save_dir, PAPQMNIST_Bags, AddGaussianNoise, count_max_num_instances, test, test_bags_info
+from functions_PAPQMNIST import list_files_in_folder, create_save_dir, PAPQMNIST_Bags, AddGaussianNoise, count_max_num_instances, test, test_bags_info, find
 from attention_models import Attention_bags_1GPU
 from evaluationPAPQMNIST import compute_metrics
-
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
     
 """ Enter inputs """
 parser = argparse.ArgumentParser(description='PyTorch PAPQMNIST bags Example')
-parser.add_argument('--epochs', type=int, default=6, metavar='N',
+parser.add_argument('--epochs', type=int, default=50, metavar='N',
                     help='number of epochs to train (default: 20)')
 parser.add_argument('--lr', type=float, default=0.000005, metavar='LR',
                     help='learning rate (default: 0.0005)')
@@ -23,7 +25,7 @@ parser.add_argument('--reg', type=float, default=10e-5, metavar='R',
                     help='weight decay') #10e-5
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
-parser.add_argument('--sampling_size', type=int, default=200, metavar='SamplingSize',
+parser.add_argument('--sampling_size', type=int, default=100, metavar='SamplingSize',
                     help='sampling size in number of instances to sample')
 args, unknown = parser.parse_known_args()
 args.cuda = torch.cuda.is_available()
@@ -35,19 +37,22 @@ if args.cuda:
 
 # Positive bags list:
 list_posit_bags = ['01', '05', '53', '07', '37','55', '86','88','98','03','101','96'] # list of positive bags
-percent_key_ins = 10 # percent of key instances in PAPQMNIST
-data_path = f'../fold1/PAPQMNIST_0012__{percent_key_ins:04d}_1'
+# percent_key_ins = 10 # percent of key instances in PAPQMNIST
+data_path = '../../fold1/PAPQMNIST_0012__0005_1'  #f'../fold1/PAPQMNIST_0012__{percent_key_ins:04d}_1'
 mean_dataset = [0.5223, 0.6717, 0.7039] # example
 std_dataset = [0.1364, 0.1376, 0.1370] # example
-model_architecture = 'squeezenet' # resnet18, squeezenet, lenet
+model_architecture = 'resnet18' # resnet18, squeezenet, lenet
 gpu_number = '0'
 
-path = Path(data_path)
+if model_architecture=='lenet':
+    args.lr=0.00005; args.reg=10e-6
+elif model_architecture=='resnet18':
+    args.lr=0.000005; args.reg=10e-5
+elif model_architecture=='squeezenet':
+    args.lr=0.00005; args.reg=10e-5
 
-print('Init Model')
-if args.cuda:
-    model = Attention_bags_1GPU(gpu_number, model_architecture)
-    model.to('cuda:'+gpu_number)
+
+path = Path(data_path)
     
 # Largest number of instances per bag
 max_bag_length = count_max_num_instances(data_path)
@@ -60,14 +65,20 @@ else:
     # no sampling
     test_epochs = 1; val_times = 1
 print(test_epochs,'test_epochs')
-window_length = 5 # valudation window of epochs for calculating moving average
+window_length = 15 # valudation window of epochs for calculating moving average
 
 save_weights_dir = create_save_dir(os.path.join(data_path), 'test_weights_epochs_'+str(test_epochs)+'samplingSize_'+str(args.sampling_size)+'_train_epochs_'+str(args.epochs)+
                                    '_lr'+str(args.lr)+'_model_'+model_architecture+'MIL') 
 
+
+# '''
+print('Init Model')
+if args.cuda:
+    model = Attention_bags_1GPU(gpu_number, model_architecture)
+    model.to('cuda:'+gpu_number) 
+
 optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.999), weight_decay=args.reg)
-    
-    
+
 train_loader = data_utils.DataLoader(PAPQMNIST_Bags(train=True,
                                                valid=False,
                                                test=False,
@@ -100,10 +111,12 @@ valid_loader = data_utils.DataLoader(PAPQMNIST_Bags(train=False,
                                     batch_size=1,
                                     shuffle=False)
 
+''' 
 """ Train """
+''' 
 path = Path(data_path)
 all_train_loss = []; all_train_error=[]; all_valid_loss=[]; all_valid_error=[]
-count_stable_epochs=[]; 
+count_stable_epochs=[]; name_best_inMovAv_val_error_model='1'
 min_valid_loss = torch.tensor([float('inf')]).to('cuda:'+gpu_number) 
 min_valid_error = np.inf; window_with_best_avg=np.inf
 num_epochs=args.epochs; lr=args.lr
@@ -164,7 +177,7 @@ for epoch in range(1, args.epochs + 1):
     if len(all_valid_error)>window_length-1:
         avg_valid_error_window = np.mean(np.asarray(all_valid_error)[-window_length:])
         
-        if window_with_best_avg > avg_valid_error_window:
+        if window_with_best_avg > avg_valid_error_window and epoch>20:
             idx_model_in_window_with_min_loss = np.argmin(np.asarray(all_valid_error)[-window_length:])
             window_with_best_avg = avg_valid_error_window
             name_best_inMovAv_val_error_model = os.path.join(os.path.join(data_path), 'saved_model_PAPQMNIST_'+model_architecture+path.parts[-1]+
@@ -198,6 +211,23 @@ for ep in range(1,num_epochs+1):
     if os.path.isfile(model_nametmp):
         os.remove(model_nametmp)
 
+np.save(os.path.join(save_weights_dir,'all_train_loss_overallEpochs'+str(num_epochs)+'_lr'+str(lr)+'.npy'), np.asarray(all_train_loss))
+np.save(os.path.join(save_weights_dir,'all_valid_loss_overallEpochs'+str(num_epochs)+'_lr'+str(lr)+'.npy'), np.asarray(all_valid_loss))
+np.save(os.path.join(save_weights_dir,'all_train_error_overallEpochs'+str(num_epochs)+'_lr'+str(lr)+'.npy'), np.asarray(all_train_error))
+np.save(os.path.join(save_weights_dir,'all_valid_error_overallEpochs'+str(num_epochs)+'_lr'+str(lr)+'.npy'), np.asarray(all_valid_error))              
+
+plt.figure()
+plt.scatter(np.arange(0,len(all_train_loss)), np.asarray(all_train_loss), color='red', alpha=0.5, linewidths=0.8)
+plt.scatter(np.arange(0,len(all_valid_loss)), np.asarray(all_valid_loss), color='green', marker='*',alpha=0.5,linewidths=0.8)
+plt.show()
+plt.savefig(os.path.join(save_weights_dir, 'train_valid_loss_overallEpochs'+str(num_epochs)+'_lr'+str(lr)+'.png'), dpi=300)
+
+plt.figure()
+plt.scatter(np.arange(0,len(all_train_error)), np.asarray(all_train_error), color='red', alpha=0.5, linewidths=0.8)
+plt.scatter(np.arange(0,len(all_valid_error)), np.asarray(all_valid_error), color='green', marker='*',alpha=0.5,linewidths=0.8)
+plt.show()
+plt.savefig(os.path.join(save_weights_dir, 'train_valid_error_overallEpochs'+str(num_epochs)+'_lr'+str(lr)+'.png'), dpi=300)
+# '''
 """ Test """              
 test_loader = data_utils.DataLoader(PAPQMNIST_Bags(train=False,
                                               valid=False,
@@ -216,11 +246,20 @@ if args.cuda:
     model = Attention_bags_1GPU(gpu_number, model_architecture)
     model.to('cuda:'+gpu_number)
 
+path = Path(save_weights_dir)
+
+
+model_name = find('*.pt', save_weights_dir)
+if len(model_name)==1:
+    new_name_best_inMovAv_val_error_model = model_name[0]
+else:
+    "Error: Two models saved?" 
+
+
 model.load_state_dict(torch.load(new_name_best_inMovAv_val_error_model))
-subfolder='best_inMovAv_val_loss_model'
+subfolder = 'best_inMovAv_val_loss_model'
 test(save_weights_dir, subfolder, test_loader, model, test_epochs, args.cuda, gpu_number, all_names_test) 
 
 """ Evaluation """
 test_bags = test_bags_info(data_path)    
-compute_metrics(subfolder, save_weights_dir, test_bags, data_path, sampling_size_in_instances)
-
+compute_metrics(subfolder, save_weights_dir, test_bags, data_path, test_epochs) 

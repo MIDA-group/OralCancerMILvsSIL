@@ -4,8 +4,11 @@ import torch.nn.functional as F
 import numpy as np
 import os
 import cv2
+from PIL import Image
 
-class PAPQMNIST_SIL():
+
+
+class OC_SIL():
     def __init__(self, list_IDs, labels, transform, path, batch_size, dim, n_channels,
                  n_classes, negative_class_name, positive_class_name, shuffle):
         """Initialization"""
@@ -51,21 +54,25 @@ class PAPQMNIST_SIL():
         y = torch.empty(self.batch_size, dtype=torch.int64)
         # Generate data
         for i, ID in enumerate(list_IDs_temp):
+            # print(list_IDs_temp[i], ID)
             exists = os.path.isfile(os.path.join(self.path, self.negative_class_name, ID))
             if exists:
-#                 image = Image.open(os.path.join(self.path, self.negative_class_name, ID))
-#                 image_tensor = self.transform(image=image)
-                image = cv2.imread(os.path.join(self.path, self.negative_class_name, ID))
-                img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                augmented = self.transform(image=img)
-                image_tensor = augmented['image']
+                image = Image.open(os.path.join(self.path, self.negative_class_name, ID))
+                image_tensor = self.transform(image)
+                # image = cv2.imread(os.path.join(self.path, self.negative_class_name, ID))
+                # img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                # augmented = self.transform(img)#(image=img)
+                # image_tensor = augmented['image']
+                # focus_stack = torch.cat((focus_stack, image_tensor), 0)
             else:
-#                 image = Image.open(os.path.join(self.path, self.positive_class_name, ID))
-#                 image_tensor = self.transform(image=image)
-                image = cv2.imread(os.path.join(self.path, self.positive_class_name, ID))
-                img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                augmented = self.transform(image=img)
-                image_tensor = augmented['image']
+                image = Image.open(os.path.join(self.path, self.positive_class_name, ID))
+                image_tensor = self.transform(image)
+                # image = cv2.imread(os.path.join(self.path, self.positive_class_name, ID))
+                # img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                # augmented = self.transform(img)#(image=img)
+                # image_tensor = augmented['image']
             X[i, ] = image_tensor
             y[i] = self.labels[ID]
         return X, y
+    
+    

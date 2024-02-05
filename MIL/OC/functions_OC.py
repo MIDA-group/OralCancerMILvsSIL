@@ -182,9 +182,9 @@ def test(save_weights_dir, subfolder, test_loader, model, test_epochs, cuda, gpu
                 data, bag_label = data.to('cuda:'+gpu_number), bag_label.to('cuda:'+gpu_number) 
             data, bag_label = Variable(data), Variable(bag_label)
             loss, attention_weights = model.calculate_objective(data, bag_label)
-            test_loss += loss.data[0]
+#             test_loss += loss.data[0]
             error, predicted_label = model.calculate_classification_error(data, bag_label)
-            test_error += error
+#             test_error += error
             
             create_save_dir(save_weights_dir, subfolder)
             save_weights_bag = create_save_dir(os.path.join(save_weights_dir, subfolder), \
@@ -192,7 +192,7 @@ def test(save_weights_dir, subfolder, test_loader, model, test_epochs, cuda, gpu
             for i in range(data.cpu().shape[1]):
                 # Save attention weights
                 np.save(os.path.join(save_weights_bag, str(all_names_test[index][sample_indices[0][i]])+'_'+\
-                                     str(epoch).zfill(2)+'_'+\
+                                     str(epoch).zfill(5)+'_'+\
                                      str(bages_names[0].cpu().numpy()).zfill(4)+'_'+\
                                      str(predicted_label.cpu().numpy())+".npy"), \
                         attention_weights.cpu().data.numpy()[0][i]) 

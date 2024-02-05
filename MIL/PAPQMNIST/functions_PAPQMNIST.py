@@ -9,7 +9,7 @@ from torchvision.models.resnet import ResNet, Bottleneck
 from PIL import Image
 from pathlib import Path
 import numpy as np
-import os
+import os, fnmatch
 
 
 def list_files_in_folder(image_folder):
@@ -47,7 +47,7 @@ class PAPQMNIST_Bags(data_utils.Dataset):
             self.datapath = os.path.join(data_path, 'test')
             self.list_paths = self._list_bags_paths()
             self.test_bags_list, self.test_labels_list, self.test_imgs_lists, self.bags_names_test = self._create_bags()
-            np.save(os.path.join(data_path,'test_imgs_lists.npy'), np.asarray(self.test_imgs_lists))
+            np.save(os.path.join(data_path,'test_imgs_lists.npy'), np.asarray(self.test_imgs_lists, dtype=object))
 
     def _list_bags_paths(self):
         list_paths = []
@@ -134,6 +134,8 @@ class PAPQMNIST_Bags(data_utils.Dataset):
         return bag_sampled, label_sampled, torch.as_tensor(sample_indices), torch.as_tensor(index), torch.as_tensor(bages_names_sampled)
     
     
+
+
 class AddGaussianNoise(object):
     def __init__(self, mean=0., var1=1., var2=1.):
         var = (var1 - var2) * torch.rand(1) + var2
@@ -174,10 +176,17 @@ def test_bags_info(data_path):
                             test_bags.append(ggrandchild.parts[-1])
     return test_bags
 
+def find(pattern, path):
+    result = []
+    for root, dirs, files in os.walk(path):
+        for name in files:
+            if fnmatch.fnmatch(name, pattern):
+                result.append(os.path.join(root, name))
+    return result
 
 def test(save_weights_dir, subfolder, test_loader, model, test_epochs, cuda, gpu_number, all_names_test):
     model.eval()
-    test_loss = 0.; test_error = 0.
+    # test_loss = 0.; test_error = 0.
     for epoch in range(0, test_epochs): 
         print('test_epoch', epoch, end='\r')
         for batch_idx, (data, label, sample_indices, index, bages_names) in enumerate(test_loader):
@@ -187,21 +196,21 @@ def test(save_weights_dir, subfolder, test_loader, model, test_epochs, cuda, gpu
                 data, bag_label = data.to('cuda:'+gpu_number), bag_label.to('cuda:'+gpu_number) 
             data, bag_label = Variable(data), Variable(bag_label)
             loss, attention_weights = model.calculate_objective(data, bag_label)
-            test_loss += loss.data[0]
+            # test_loss += loss.data[0]
             error, predicted_label = model.calculate_classification_error(data, bag_label)
-            test_error += error
+            # test_error += error
             
             create_save_dir(save_weights_dir, subfolder)
             save_weights_bag = create_save_dir(os.path.join(save_weights_dir, subfolder), \
                                                str(bages_names[0].cpu().numpy()).zfill(4))
+            # print(len(attention_weights.cpu().data), attention_weights.cpu().data.numpy()[0])                                  
             for i in range(data.cpu().shape[1]):
                 label_name = int(label[1][0][i].cpu().numpy())
                 # Save attention weights
                 np.save(os.path.join(save_weights_bag, str(all_names_test[index][sample_indices[0][i]])+'_'+\
-                                     str(epoch).zfill(2)+'_'+str(label_name)+'_'+\
+                                     str(epoch).zfill(5)+'_'+str(label_name)+'_'+\
                                      str(bages_names[0].cpu().numpy()).zfill(4)+'_'+\
                                      str(predicted_label.cpu().numpy())+".npy"), \
                         attention_weights.cpu().data.numpy()[0][i]) 
-                
                 
                 

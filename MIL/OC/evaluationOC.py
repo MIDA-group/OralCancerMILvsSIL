@@ -19,7 +19,7 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
     true_all_bags_label=[]
     num_test_bags = len(bag_names)
     average_weights_folder = create_save_dir(weights_folder, 'average_weights_'+subfolder_valid_approach)
-    
+    print('bag_names', bag_names)
     for bag_num in bag_names: 
         bag_folder = os.path.join(weights_folder, subfolder_valid_approach, str(bag_num).zfill(4))
         list_weights_bag = list_files_in_folder(bag_folder)
@@ -35,8 +35,9 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
         all_pred_sample_labels=[]
         for s in range(num_samples):
             for i in range(len(list_weights_bag)):
-                if list_weights_bag[i][-19:-16]==str(s).zfill(2) or list_weights_bag[i][-18:-16]==str(s).zfill(2):
-#                     print(list_weights_bag[i][-21:-18])
+                if list_weights_bag[i][-21:-16]==str(s).zfill(5):
+#                 if list_weights_bag[i][-19:-16]==str(s).zfill(2) or list_weights_bag[i][-18:-16]==str(s).zfill(2):
+#                     print(list_weights_bag[i][-21:-16])
                     pred_sample_label = list_weights_bag[i][-8:-7]
                     all_pred_sample_labels.append(pred_sample_label)                    
                     break # all instances in sample have the same bag label
@@ -57,13 +58,17 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
             count_TN+=1     
             
         all_true_labels.append(true_bag_label); all_pred_labels.append(pred_bag_label)
+#         print('true_bag_label, pred_bag_label', true_bag_label, pred_bag_label) 
         
         # Instance level label
         weights_all_samples_for_one_bag=[]; names_all_samples_for_one_bag=[]
         for s in range(num_samples):
+#             print('str(s).zfill(5)', str(s).zfill(5))
             all_inst_weights_in_one_sample=[]; all_inst_names_in_one_sample=[]
             for i in range(len(list_weights_bag)): 
-                if list_weights_bag[i][-19:-16]==str(s).zfill(2) or list_weights_bag[i][-18:-16]==str(s).zfill(2):
+#                 if list_weights_bag[i][-19:-16]==str(s).zfill(2) or list_weights_bag[i][-18:-16]==str(s).zfill(2):
+#                 print('list_weights_bag[i][-21:-16]', list_weights_bag[i][-21:-16])
+                if list_weights_bag[i][-21:-16]==str(s).zfill(5):
                     coeff = np.load(os.path.join(bag_folder, list_weights_bag[i]))
                     all_inst_weights_in_one_sample.append(coeff)
                     all_inst_names_in_one_sample.append(list_weights_bag[i])
@@ -93,7 +98,7 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
                         one_image_pred_sample_label.append(pred_sample_label)
                         
             if not one_image_pred_sample_label:
-                print('NO EVALUATION FOR IMAGE: ', j)
+#                 print('NO EVALUATION FOR IMAGE: ', j)
                 names_test_imgs_sampled_one_bag.append('')
             else:
                 names_test_imgs_sampled_one_bag.append(img_name)
@@ -153,11 +158,13 @@ def compute_metrics(subfolder_valid_approach, weights_folder, bag_names, root, n
             create_save_dir(os.path.join(avg_weights_bag_folder, 'maj_label_0'), 'top')
             np.save(os.path.join(avg_weights_bag_folder, 'maj_label_0', 'top', 'top'+str(top_number)+'.npy'), top_weights_img_names) 
             
-    fpr, tpr, thres = sklearn.metrics.roc_curve(np.asarray(all_true_labels), np.asarray(all_pred_labels))
-    AUC_bag_level = sklearn.metrics.auc(fpr, tpr)
+#     fpr, tpr, thres = sklearn.metrics.roc_curve(np.asarray(all_true_labels), np.asarray(all_pred_labels))
+#     AUC_bag_level = sklearn.metrics.auc(fpr, tpr)
+    print('Bag true. pred: ', all_true_labels, all_pred_labels)
+    acc_bag = np.sum(np.where(np.asarray(all_true_labels)==np.asarray(all_pred_labels), 1, 0))/(num_test_bags+1e-12)
     e = perf_counter() - start_t
     print("Elapsed time during the whole program in seconds:", e)
 
-    print('AUC', "%.3f" % AUC_bag_level)
+    print('Accuracy, bag level', "%.3f" % acc_bag)
     print('Bag level confusion matrix', [count_TP,count_FP,count_FN,count_TN])
 

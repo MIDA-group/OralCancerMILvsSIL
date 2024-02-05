@@ -15,7 +15,7 @@ from evaluationOC import compute_metrics
     
 """ Enter inputs """
 parser = argparse.ArgumentParser(description='PyTorch PAPQMNIST/OC bags Example')
-parser.add_argument('--epochs', type=int, default=6, metavar='N',
+parser.add_argument('--epochs', type=int, default=50, metavar='N',
                     help='number of epochs to train (default: 20)')
 parser.add_argument('--lr', type=float, default=0.000005, metavar='LR',
                     help='learning rate (default: 0.0005)')
@@ -23,7 +23,7 @@ parser.add_argument('--reg', type=float, default=10e-5, metavar='R',
                     help='weight decay') #10e-5
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
-parser.add_argument('--sampling_size', type=int, default=200, metavar='SamplingSize',
+parser.add_argument('--sampling_size', type=int, default=50, metavar='SamplingSize',
                     help='sampling size in number of instances to sample')
 args, unknown = parser.parse_known_args()
 args.cuda = torch.cuda.is_available()
@@ -35,8 +35,10 @@ if args.cuda:
 
 # Positive bags list:
 list_posit_bags = ['01', '05', '53', '07', '37','55', '86','88','98','03','101','96'] # list of positive bags
-percent_key_ins = 10 # percent of key instances in PAPQMNIST
-data_path = f'../fold1/PAPQMNIST_0012__{percent_key_ins:04d}_1' # substitute to other folder of a dataset w/o GT at the instance level
+# percent_key_ins = 10 # percent of key instances in PAPQMNIST
+# data_path = f'../fold1/PAPQMNIST_0012__{percent_key_ins:04d}_1' # substitute to other folder of a dataset w/o GT at the instance level
+data_path = '../../fold1/OC_dataset_mock'
+
 mean_dataset = [0.5223, 0.6717, 0.7039] # example
 std_dataset = [0.1364, 0.1376, 0.1370] # example
 model_architecture = 'squeezenet' # resnet18, squeezenet, lenet
@@ -217,10 +219,10 @@ if args.cuda:
     model.to('cuda:'+gpu_number)
 
 model.load_state_dict(torch.load(new_name_best_inMovAv_val_error_model))
-subfolder='best_inMovAv_val_loss_model'
+subfolder = 'best_inMovAv_val_loss_model'
 test(save_weights_dir, subfolder, test_loader, model, test_epochs, args.cuda, gpu_number, all_names_test) 
 
 """ Evaluation """
 test_bags = test_bags_info(data_path)    
-compute_metrics(subfolder, save_weights_dir, test_bags, data_path, sampling_size_in_instances)
+compute_metrics(subfolder, save_weights_dir, test_bags, data_path, test_epochs)
 
