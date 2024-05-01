@@ -1,4 +1,4 @@
-# Oral cancer detection and interpretation: Deep multiple instance learning versus conventional deep single instance learning
+# Deep multiple instance learning versus conventional deep single instance learning for interpretable oral cancer detection
 <a href="mailto:nadezhda.koriakina@it.uu.se">Nadezhda Koriakina</a>:envelope:, <a href="mailto:natasa.sladoje@it.uu.se">Nataša Sladoje</a>, Vladimir Bašić and <a href="mailto:joakim.lindblad@it.uu.se">Joakim Lindblad</a>
 
 ## Table of Contents
@@ -29,11 +29,11 @@ Restart jupyter kernel if changes to the internal codes are made.
 <ins>Note:</ins> the code is created for PAP-QMNIST data based on OC data and might require changes if custom data is used.
 
 ## Citation
-@article{koriakina2022oral,<br />
-  title={Oral cancer detection and interpretation: Deep multiple instance learning versus conventional deep single instance learning},<br />
+@article{koriakina2024oral,<br />
+  title={Deep multiple instance learning versus conventional deep single instance learning for interpretable oral cancer detection},<br />
   author={Koriakina, Nadezhda and Sladoje, Nata{\v{s}}a and Ba{\v{s}}i{\'c}, Vladimir and Lindblad, Joakim},<br />
-  journal={arXiv preprint arXiv:2202.01783},<br />
-  year={2022}<br />
+  journal={PLOS ONE 19(4): e0302169},<br />
+  year={2024}<br />
 }
 
 ## References
@@ -45,7 +45,9 @@ N. Koriakina, N. Sladoje and J. Lindblad, "The Effect of Within-Bag Sampling on 
 Yadav, Chhavi, and Léon Bottou. "Cold case: The lost mnist digits." arXiv preprint arXiv:1905.10498 (2019).<br />
 
 ## Acknowledgements
-This work is supported by: Sweden’s Innovation Agency (VINNOVA), grants 2017-02447 and 2020-03611, and the SwedishResearch Council, grant 2017-04385. A part of computations was enabled by resources provided by the Swedish NationalInfrastructure for Computing (SNIC) at Chalmers Centre for Computational Science and Engineering (C3SE), partially fundedby the Swedish Research Council through grant no. 2018-05973.
+This work is supported by: Sweden’s Innovation Agency (VINNOVA), grants 2017-02447, (J.L.), 2021-01420 (J.L.), and 2020-03611 (J.L.), the Swedish Research Council, grant 2017-04385 (J.L.) and 2022-03580_VR (N.S.), and Cancerfonden, project number 22 2353 Pj (J.L.) and project number 22 2357 Pj (N.S.).
+A part of the experiments was enabled by computational resources provided by the National Academic Infrastructure for Supercomputing in Sweden (NAISS), partially funded by the Swedish Research Council through grant agreement no. 2022-06725.
+
 
 
 
