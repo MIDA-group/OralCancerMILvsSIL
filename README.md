@@ -1,4 +1,8 @@
 # Deep multiple instance learning versus conventional deep single instance learning for interpretable oral cancer detection
+Article: [PLoS ONE 19(4): e0302169, 2024](https://doi.org/10.1371/journal.pone.0302169)
+
+ArXiv: https://arxiv.org/abs/2202.01783
+
 <a href="mailto:nadezhda.koriakina@it.uu.se">Nadezhda Koriakina</a>:envelope:, <a href="mailto:natasa.sladoje@it.uu.se">Nataša Sladoje</a>, Vladimir Bašić and <a href="mailto:joakim.lindblad@it.uu.se">Joakim Lindblad</a>
 
 ## Table of Contents
@@ -38,7 +42,7 @@ Restart jupyter kernel if changes to the internal codes are made.
     year = {2024},<br />
     month = {04},<br />
     volume = {19},<br />
-    url = {https://doi.org/10.1371/journal.pone.0302169},<br />
+    url = { https://doi.org/10.1371/journal.pone.0302169 },<br />
     pages = {1-23},<br />
     abstract = {The current medical standard for setting an oral cancer (OC) diagnosis is histological examination of a tissue sample taken from the oral cavity. This process is time-consuming and more invasive than an alternative approach of acquiring a brush sample followed by cytological analysis. Using a microscope, skilled cytotechnologists are able to detect changes due to malignancy; however, introducing this approach into clinical routine is associated with challenges such as a lack of resources and experts. To design a trustworthy OC detection system that can assist cytotechnologists, we are interested in deep learning based methods that can reliably detect cancer, given only per-patient labels (thereby minimizing annotation bias), and also provide information regarding which cells are most relevant for the diagnosis (thereby enabling supervision and understanding). In this study, we perform a comparison of two approaches suitable for OC detection and interpretation: (i) conventional single instance learning (SIL) approach and (ii) a modern multiple instance learning (MIL) method. To facilitate systematic evaluation of the considered approaches, we, in addition to a real OC dataset with patient-level ground truth annotations, also introduce a synthetic dataset—PAP-QMNIST. This dataset shares several properties of OC data, such as image size and large and varied number of instances per bag, and may therefore act as a proxy model of a real OC dataset, while, in contrast to OC data, it offers reliable per-instance ground truth, as defined by design. PAP-QMNIST has the additional advantage of being visually interpretable for non-experts, which simplifies analysis of the behavior of methods. For both OC and PAP-QMNIST data, we evaluate performance of the methods utilizing three different neural network architectures. Our study indicates, somewhat surprisingly, that on both synthetic and real data, the performance of the SIL approach is better or equal to the performance of the MIL approach. Visual examination by cytotechnologist indicates that the methods manage to identify cells which deviate from normality, including malignant cells as well as those suspicious for dysplasia. We share the code as open source.},<br />
     number = {4},<br />
