@@ -1,8 +1,6 @@
 # Deep multiple instance learning versus conventional deep single instance learning for interpretable oral cancer detection
 Article: [PLoS ONE 19(4): e0302169, 2024](https://doi.org/10.1371/journal.pone.0302169)
 
-ArXiv: https://arxiv.org/abs/2202.01783
-
 <a href="mailto:nadezhda.koriakina@it.uu.se">Nadezhda Koriakina</a>:envelope:, <a href="mailto:natasa.sladoje@it.uu.se">Nataša Sladoje</a>, Vladimir Bašić and <a href="mailto:joakim.lindblad@it.uu.se">Joakim Lindblad</a>
 
 ## Table of Contents
